@@ -3,17 +3,21 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Catstagram</title>
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
     <link rel="stylesheet" href="./style.css">
+    <script src="./index.js" type="module"></script>
 </head>
 
 <body>
-    <script type="text/javascript" type="module">
+    <script type="text/javascript">
+        const CAT_IMAGE_ID = 'cat-img'
+
         // Your code here
         function makeTitle() {
             const h1 = document.createElement("h1")
-            h1.innerText = "Kitten Pic"
+            h1.innerText = "Catstagram"
             document.body.appendChild(h1)
 
             h1.style.display = 'flex';
@@ -21,50 +25,149 @@
             h1.style.color = 'darkorchid';
         }
 
-        const addImage = async () => {
-            // fetch('https://api.thecatapi.com/v1/images/search').then(res => {
-            //     res.json().then(data => {
-            //         const imgsection = document.createElement("section");
-            //         const img = document.createElement("img");
-            //         img.setAttribute("src", data[0].url);
-            //         imgsection.appendChild(img);
-            //         document.body.appendChild(imgsection);
-            //     })
-            // })
-
+        const getCatImageUrl = async () => {
             const res = await fetch("https://api.thecatapi.com/v1/images/search")
             const data = await res.json()
-            // console.log("DATA", data)
+            return data[0].url;
+        }
+
+        function makeButton() {
+            const buttonDiv = document.createElement("div");
+            buttonDiv.id = "new-cat-button-container";
+            const button = document.createElement("button");
+            button.innerText = "View New Cat";
+            button.id = "new-cat"
+
+            buttonDiv.appendChild(button);
+            document.body.appendChild(buttonDiv)
+
+            button.addEventListener('click', async () => {
+                // get image element on webpage
+                const img = document.getElementById(CAT_IMAGE_ID)
+                // get new cat url
+                const catUrl = await getCatImageUrl();
+                // update image with new url
+                img.setAttribute("src", catUrl);
+
+                const scoreCount = document.getElementById('score-count')
+                scoreCount.innerText = 0;
+
+                const commentList = document.querySelector('ul');
+                console.log(commentList);
+
+                while (commentList.hasChildNodes()) {
+                    commentList.removeChild(commentList.firstChild)
+                }
+            })
+
+        }
+
+        const addImage = async () => {
+            const catUrl = await getCatImageUrl();
 
             const imgsection = document.createElement("section");
             const img = document.createElement("img");
-            img.setAttribute("src", data[0].url);
-            img.setAttribute("id", 'cat-pic');
-            img.id = 'cat-pic'
+            img.id = CAT_IMAGE_ID
+            img.setAttribute("src", catUrl);
 
             imgsection.appendChild(img);
             document.body.appendChild(imgsection);
         }
 
-        function setupAnimation() {
-            const catPic = document.getElementById('cat-pic')
-            if (Array.from(catPic.classList).includes('animate')) {
-                catPic.classList.remove('animate')
-            }
-            catPic.addEventListener('click', () => {
-                catPic.classList.add('animate');
-                console.log("Cat pic", catPic)
-                setTimeout(() => {
-                    catPic.classList.remove('animate');
-                }, 3000)
+        function makeScoreCounter() {
+            const scoreDiv = document.createElement("div");
+            const scoreText = document.createElement("span")
+            scoreText.innerText = 'Popularity Score: '
+            const scoreCount = document.createElement("span")
+            scoreCount.innerText = 0;
+            scoreCount.id = 'score-count'
+            scoreDiv.appendChild(scoreText)
+            scoreDiv.appendChild(scoreCount)
+            document.body.appendChild(scoreDiv)
+        }
+
+        function makeVotingButtons() {
+            const votingDiv = document.createElement("div");
+            const upButton = document.createElement("button");
+            upButton.innerText = "Upvote";
+            const downButton = document.createElement("button");
+            downButton.innerText = "Downvote";
+
+            votingDiv.append(upButton, downButton);
+            document.body.appendChild(votingDiv);
+
+            upButton.addEventListener('click', () => {
+                const scoreCount = document.getElementById('score-count')
+                scoreCount.innerText = parseInt(scoreCount.innerText) + 1
+            })
+
+            downButton.addEventListener('click', () => {
+                alert("rude")
+                // const scoreCount = document.getElementById('score-count');
+                // scoreCount.innerText = parseInt(scoreCount.innerText) - 1
             })
         }
 
+        function makeComments() {
+            const commentDiv = document.createElement("div");
+            const span = document.createElement("span");
+            span.innerText = "Comment:";
+
+            const comment = document.createElement("input");
+            comment.setAttribute("type", "text");
+            comment.setAttribute("placeholder", "Add a comment...");
+            comment.setAttribute("id", "comment-box");
+
+            const submitButton = document.createElement("button");
+            submitButton.innerText = "Submit";
+
+            commentDiv.append(span, comment, submitButton);
+            document.body.appendChild(commentDiv);
+
+            const bottomContainer = document.createElement("div");
+            bottomContainer.style.border = "4mm ridge darkorchid";
+            bottomContainer.style.height = "10vh";
+            bottomContainer.style.width = "40vw";
+            bottomContainer.style.overflowY = 'scroll'
+            bottomContainer.style['max-height'] = '10vh'
+            const ul = document.createElement('ul');
+            bottomContainer.appendChild(ul);
+            document.body.appendChild(bottomContainer);
+
+            submitButton.addEventListener("click", () => {
+                //get value of input
+                const text = comment.value;
+                // console.log('text', text)
+                //make li
+                const li = document.createElement('li');
+                //li inner text is value of input
+                li.innerText = text
+                //append li to ul
+                ul.appendChild(li);
+
+                comment.value = ''
+            })
+        }
+
+        // function makeBottomContainer() {
+        //     const bottomContainer = document.createElement("div");
+        //     bottomContainer.style.border = "2px solid black";
+        //     bottomContainer.style.height = "200px";
+        //     const ul = document.createElement('ul');
+        //     bottomContainer.appendChild(ul);
+        //     document.body.appendChild(bottomContainer);
+
+
+        // }
 
         window.onload = async () => {
             makeTitle();
+            makeButton();
             await addImage();
-            setupAnimation();
+            makeScoreCounter();
+            makeVotingButtons();
+            makeComments();
+            // makeBottomContainer();
         }
 
     </script>
